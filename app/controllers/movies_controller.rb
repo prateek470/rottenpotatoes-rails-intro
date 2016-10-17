@@ -11,6 +11,7 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @all_ratings = Movie.ratings
     if params[:sort] == 'title' or params[:sort] == 'release_date' then
       @highlight = params[:sort]# highlight variable to show yellow color
     else
@@ -25,7 +26,20 @@ class MoviesController < ApplicationController
     # Default behaviour
     else
       @movies = Movie.all
-      
+    end
+# Do task based on rating
+    @sort = params[:sort]
+    # if rating is null then select all ratings other wise select the keys
+    if(params[:ratings] == nil)
+      @selected_ratings = @all_ratings
+    else
+      @selected_ratings = params[:ratings].keys
+    end
+    # After selecting ratings sort them again if sort is present
+    if(@sort != nil)
+      @movies = Movie.where(:rating =>@selected_ratings).order(@sort)
+    else
+      @movies = Movie.where(:rating =>@selected_ratings)
     end
   end
 
