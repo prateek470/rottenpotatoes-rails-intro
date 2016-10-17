@@ -11,7 +11,22 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    if params[:sort] == 'title' or params[:sort] == 'release_date' then
+      @highlight = params[:sort]# highlight variable to show yellow color
+    else
+      @highlight = 'none'
+    end
+    # When param sort is title then sort only movies
+    if params[:sort] == 'title' then
+      @movies = Movie.order('title')
+    # if sort is release_date then sort the dates
+    elsif params[:sort] == 'release_date' then
+      @movies = Movie.order('release_date')
+    # Default behaviour
+    else
+      @movies = Movie.all
+      
+    end
   end
 
   def new
