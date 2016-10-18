@@ -27,22 +27,50 @@ class MoviesController < ApplicationController
     else
       @movies = Movie.all
     end
-# Do task based on rating
-    @sort = params[:sort]
-    # if rating is null then select all ratings other wise select the keys
-    if(params[:ratings] == nil)
+
+    if(params[:ratings] == nil && params[:sort] == nil && session[:history] == nil)
+      @movies = Movie.all
       @selected_ratings = @all_ratings
-    else
-      @selected_ratings = params[:ratings].keys
     end
-    # After selecting ratings sort them again if sort is present
+
+    if(params[:ratings] != nil || params[:sort] != nil)
+      #If session exist then assign 
+      session[:history] = session[:history].present? ? session[:history] : {}
+      session[:history][:sort]=nil
+      if (params[:sort] != nil && params[:sort].length != 0)
+        session[:history][:sort] = params[:sort]
+        # session[:sort] = params[:sort]
+      elsif (session[:history] != nil && session[:history].length != 0)
+        params[:sort]  = session[:history][:sort]
+        # params[:sort]  = session[:sort]
+      # elsif params[:sort]==nil
+      #   session.delete(:sort)
+      end
+
+      if (params[:ratings] != nil)
+        session[:history][:ratings] = params[:ratings]
+      end
+    elsif (session[:history] != nil && session[:history].length != 0) 
+      flash.keep
+      redirect_to movies_path + '?' + session[:history].to_query
+    end
+
+    if(session[:history])
+      @selected_ratings = (session[:history][:ratings].present? ? session[:history][:ratings].keys : @all_ratings)
+      if(@sort == nil)
+        # @sort = session[:sort] ? session[:sort] : params[:sort]
+      end
+    else
+      @selected_ratings = @all_ratings
+      @sort = params[:sort]
+    end
+    @sort = params[:sort]
     if(@sort != nil)
       @movies = Movie.where(:rating =>@selected_ratings).order(@sort)
     else
       @movies = Movie.where(:rating =>@selected_ratings)
     end
   end
-
   def new
     # default: render 'new' template
   end
